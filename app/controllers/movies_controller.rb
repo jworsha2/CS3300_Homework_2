@@ -8,6 +8,8 @@ class MoviesController < ApplicationController
 
   def index
     @all_ratings = Movie.movie_ratings
+    @title_style = nil
+    @date_style = nil
 
     filter = params[:ratings]
     if (filter != nil)
@@ -18,8 +20,10 @@ class MoviesController < ApplicationController
 
     if (params[:sort] == 'title')
 	@movies = Movie.find_all_by_rating(filter, :order => "title")
+	@title_style = 'hilite'
     elsif (params[:sort] == 'release')
 	@movies = Movie.find_all_by_rating(filter, :order => "release_date")
+	@date_style = 'hilite'
     else
     	@movies = Movie.find_all_by_rating(filter)
     end
