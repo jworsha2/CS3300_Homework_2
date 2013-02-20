@@ -1,5 +1,7 @@
 class MoviesController < ApplicationController
 
+  @@filter = nil
+
   def show
     id = params[:id] # retrieve movie ID from URI route
     @movie = Movie.find(id) # look up movie by unique ID
@@ -7,25 +9,29 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @all_ratings = Movie.movie_ratings
-    @title_style = nil
-    @date_style = nil
+    @all_ratings = Movie.movie_ratings # all the possible movies ratings
+    @title_style = nil # the CSS class to apply to the table header for title
+    @date_style = nil # the CSS class to apply to the date released header for title
+    
+    # if this is your first visit, show all ratings
+    if @@filter == nil
+	@@filter = @all_ratings
+    end
 
-    filter = params[:ratings]
-    if (filter != nil)
-	filter = filter.keys
-    else
-        filter = @all_ratings
+    # if a filter is selected, apply that instead
+    @selected_ratings = params[:ratings]
+    if (@selected_ratings != nil)
+	@@filter = @selected_ratings.keys # get the filtering from the view
     end
 
     if (params[:sort] == 'title')
-	@movies = Movie.find_all_by_rating(filter, :order => "title")
+	@movies = Movie.find_all_by_rating(@@filter, :order => "title")
 	@title_style = 'hilite'
     elsif (params[:sort] == 'release')
-	@movies = Movie.find_all_by_rating(filter, :order => "release_date")
+	@movies = Movie.find_all_by_rating(@@filter, :order => "release_date")
 	@date_style = 'hilite'
     else
-    	@movies = Movie.find_all_by_rating(filter)
+    	@movies = Movie.find_all_by_rating(@@filter)
     end
   end
 
