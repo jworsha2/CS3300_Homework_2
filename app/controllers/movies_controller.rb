@@ -24,14 +24,16 @@ class MoviesController < ApplicationController
 	@@filter = @selected_ratings.keys # get the filtering from the view
     end
 
+    @cur_filter = @@filter
+
     if (params[:sort] == 'title')
-	@movies = Movie.find_all_by_rating(@@filter, :order => "title")
+	@movies = Movie.find_all_by_rating(@cur_filter, :order => "title")
 	@title_style = 'hilite'
     elsif (params[:sort] == 'release')
-	@movies = Movie.find_all_by_rating(@@filter, :order => "release_date")
+	@movies = Movie.find_all_by_rating(@cur_filter, :order => "release_date")
 	@date_style = 'hilite'
     else
-    	@movies = Movie.find_all_by_rating(@@filter)
+    	@movies = Movie.find_all_by_rating(@cur_filter)
     end
   end
 
