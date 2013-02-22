@@ -9,25 +9,59 @@ class MoviesController < ApplicationController
   def index
     @all_ratings = Movie.movie_ratings # all the possible movies ratings
     @title_style = nil # the CSS class to apply to the table header for title
-    @date_style = nil # the CSS class to apply to the date released header for title    
+    @date_style = nil # the CSS class to apply to the date released header for title  
 
-    # if a filter is selected, apply that instead
+    redirect = nil # flag to indicate a redirect with all params is needed  
+
+    # find the appropriate filter for this index
     @selected_ratings = params[:ratings]
+    @session_ratings = session[:ratings]
+    ratings = nil
     if (@selected_ratings != nil)
+	ratings = @selected_ratings
 	@filter = @selected_ratings.keys # get the filtering from the view
+	session[:ratings] = @selected_ratings
+    elsif (@session_ratings != nil)
+	ratings = @session_ratings
+	redirect = true
+	@filter = @session_ratings.keys # get the filtering from the session
     else 
-	@filter = @all_ratings
+	ratings = Movie.movie_ratings_hash
+	@filter = @all_ratings # otherwise display all
     end
 
+    sort = nil
+    # find the appropriate order for this index
     if (params[:sort] == 'title')
+	sort = 'title'
 	@movies = Movie.find_all_by_rating(@filter, :order => "title")
 	@title_style = 'hilite'
+	session[:sort] = 'title'
     elsif (params[:sort] == 'release')
+	sort = 'release'
+	@movies = Movie.find_all_by_rating(@filter, :order => "release_date")
+	@date_style = 'hilite'
+	session[:sort] = 'release'
+    elsif (session[:sort] == 'title')
+	redirect = true
+	sort = 'title'
+	@movies = Movie.find_all_by_rating(@filter, :order => "title")
+	@title_style = 'hilite'
+    elsif (session[:sort] == 'release')
+	redirect = true
+	sort = 'release'
 	@movies = Movie.find_all_by_rating(@filter, :order => "release_date")
 	@date_style = 'hilite'
     else
     	@movies = Movie.find_all_by_rating(@filter)
     end
+
+    # if a redirect needs to be made to ensure RESTfulness, perform it
+    if (redirect == true)
+	flash.keep
+	redirect_to :action => 'index', :sort => sort, :ratings => ratings
+    end
+
   end
 
   def new
